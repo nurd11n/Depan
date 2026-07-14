@@ -23,8 +23,8 @@
     "stat1Label": "days transit (air / sea)",
     "stat2Value": "Chicago",
     "stat2Label": "based, USA-facing",
-    "stat3Value": "EN / RU",
-    "stat3Label": "bilingual support"
+    "stat3Value": "4",
+    "stat3Label": "languages supported"
   },
   "services": {
     "eyebrow": "What We Do",
@@ -197,6 +197,7 @@
     "tagline": "Cargo delivery and product sourcing between China and the USA.",
     "contactTitle": "Contact",
     "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
     "phone": "Phone",
     "email": "Email",
     "rights": "© {year} DAPAN GLOBAL LLC. All rights reserved.",

@@ -23,8 +23,8 @@
     "stat1Label": "дней в пути (авиа / море)",
     "stat2Value": "Чикаго",
     "stat2Label": "база в США",
-    "stat3Value": "EN / RU",
-    "stat3Label": "поддержка на двух языках"
+    "stat3Value": "4",
+    "stat3Label": "поддерживаемых языка"
   },
   "services": {
     "eyebrow": "Чем Мы Занимаемся",
@@ -197,6 +197,7 @@
     "tagline": "Доставка грузов и подбор товаров между Китаем и США.",
     "contactTitle": "Контакты",
     "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
     "phone": "Телефон",
     "email": "Email",
     "rights": "© {year} DAPAN GLOBAL LLC. Все права защищены.",

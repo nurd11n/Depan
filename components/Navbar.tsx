@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
+
+function persistScroll() {
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem("scrollY", String(window.scrollY));
+  }
+}
 
 export default function Navbar() {
   const t = useTranslations("nav");
@@ -23,14 +30,6 @@ export default function Navbar() {
     setOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   }
-
-  function switchLocale(next: string) {
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("scrollY", String(window.scrollY));
-    }
-  }
-
-  const otherLocale = locale === "en" ? "ru" : "en";
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-midnight/92 backdrop-blur-md">
@@ -65,30 +64,23 @@ export default function Navbar() {
         </ul>
 
         <div className="flex items-center gap-4">
-          <div className="hidden items-center gap-2 text-[10px] font-normal tracking-[0.15em] lg:flex">
-            {locale === "en" ? (
-              <span className="border border-gold px-3.5 py-[5px] text-gold">EN</span>
-            ) : (
-              <Link
-                href={pathname}
-                locale="en"
-                onClick={() => switchLocale("en")}
-                className="border border-transparent px-3.5 py-[5px] text-muted transition-colors hover:border-gold hover:text-gold"
-              >
-                EN
-              </Link>
-            )}
-            {locale === "ru" ? (
-              <span className="border border-gold px-3.5 py-[5px] text-gold">RU</span>
-            ) : (
-              <Link
-                href={pathname}
-                locale="ru"
-                onClick={() => switchLocale("ru")}
-                className="border border-transparent px-3.5 py-[5px] text-muted transition-colors hover:border-gold hover:text-gold"
-              >
-                RU
-              </Link>
+          <div className="hidden items-center gap-1.5 text-[10px] font-normal tracking-[0.15em] lg:flex">
+            {routing.locales.map((l) =>
+              l === locale ? (
+                <span key={l} className="border border-gold px-3 py-[5px] uppercase text-gold">
+                  {l}
+                </span>
+              ) : (
+                <Link
+                  key={l}
+                  href={pathname}
+                  locale={l}
+                  onClick={persistScroll}
+                  className="border border-transparent px-3 py-[5px] uppercase text-muted transition-colors hover:border-gold hover:text-gold"
+                >
+                  {l}
+                </Link>
+              ),
             )}
           </div>
           <button
@@ -122,18 +114,27 @@ export default function Navbar() {
                 </button>
               </li>
             ))}
-            <li className="pt-2">
-              <Link
-                href={pathname}
-                locale={otherLocale}
-                onClick={() => {
-                  switchLocale(otherLocale);
-                  setOpen(false);
-                }}
-                className="block py-2 text-[11px] font-normal tracking-[0.2em] text-gold"
-              >
-                {locale === "en" ? "RU" : "EN"}
-              </Link>
+            <li className="mt-2 flex gap-4 border-t border-border pt-3">
+              {routing.locales.map((l) =>
+                l === locale ? (
+                  <span key={l} className="text-[11px] font-normal uppercase tracking-[0.2em] text-gold">
+                    {l}
+                  </span>
+                ) : (
+                  <Link
+                    key={l}
+                    href={pathname}
+                    locale={l}
+                    onClick={() => {
+                      persistScroll();
+                      setOpen(false);
+                    }}
+                    className="text-[11px] font-normal uppercase tracking-[0.2em] text-muted hover:text-gold"
+                  >
+                    {l}
+                  </Link>
+                ),
+              )}
             </li>
           </ul>
         </div>

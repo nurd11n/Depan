@@ -1,7 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { CONTACT_EMAIL, CONTACT_PHONE, CONTACT_PHONE_DISPLAY, WHATSAPP_URL } from "@/lib/site";
+import {
+  CONTACT_EMAIL,
+  CONTACT_PHONE,
+  CONTACT_PHONE_DISPLAY,
+  INSTAGRAM_URL,
+  WHATSAPP_URL,
+} from "@/lib/site";
 
 export default function Footer() {
   const t = useTranslations("footer");
@@ -37,14 +43,24 @@ export default function Footer() {
           >
             {CONTACT_PHONE_DISPLAY}
           </a>
-          <a
-            href={WHATSAPP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 w-fit border border-border px-5 py-2.5 text-[10px] uppercase tracking-[0.15em] text-muted transition-colors hover:border-gold hover:text-gold"
-          >
-            {t("whatsapp")}
-          </a>
+          <div className="mt-1 flex gap-3">
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-fit border border-border px-5 py-2.5 text-[10px] uppercase tracking-[0.15em] text-muted transition-colors hover:border-gold hover:text-gold"
+            >
+              {t("whatsapp")}
+            </a>
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-fit border border-border px-5 py-2.5 text-[10px] uppercase tracking-[0.15em] text-muted transition-colors hover:border-gold hover:text-gold"
+            >
+              {t("instagram")}
+            </a>
+          </div>
         </div>
       </div>
 

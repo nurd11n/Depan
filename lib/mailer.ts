@@ -1,7 +1,15 @@
 import nodemailer from "nodemailer";
 import en from "@/messages/en.json";
 import ru from "@/messages/ru.json";
+import es from "@/messages/es.json";
+import uk from "@/messages/uk.json";
+import { routing } from "@/i18n/routing";
 import type { QuoteInput } from "./schemas";
+
+// Keyed by locale so the warehouse-address guide below can loop over every
+// supported language instead of hardcoding which ones exist — adding a new
+// locale to i18n/routing.ts is then enough, no change needed here.
+const MESSAGES_BY_LOCALE: Record<string, typeof en> = { en, ru, es, uk };
 
 export class MailerError extends Error {}
 
@@ -82,23 +90,19 @@ export interface WarehouseAddressEmailInput {
 }
 
 function buildWarehouseAddressBody(input: WarehouseAddressEmailInput): string {
-  return [
-    input.fullAddress,
-    "",
-    "──────────",
-    "",
-    `EN — ${en.address.guideTitle}`,
-    `1. ${en.address.guideStep1}`,
-    `2. ${en.address.guideStep2}`,
-    `3. ${en.address.guideStep3}`,
-    "",
-    `RU — ${ru.address.guideTitle}`,
-    `1. ${ru.address.guideStep1}`,
-    `2. ${ru.address.guideStep2}`,
-    `3. ${ru.address.guideStep3}`,
-    "",
-    "— DAPAN GLOBAL LLC",
-  ].join("\n");
+  const guideBlocks = routing.locales.flatMap((locale) => {
+    const msgs = MESSAGES_BY_LOCALE[locale];
+    if (!msgs) return [];
+    return [
+      "",
+      `${locale.toUpperCase()} — ${msgs.address.guideTitle}`,
+      `1. ${msgs.address.guideStep1}`,
+      `2. ${msgs.address.guideStep2}`,
+      `3. ${msgs.address.guideStep3}`,
+    ];
+  });
+
+  return [input.fullAddress, "", "──────────", ...guideBlocks, "", "— DAPAN GLOBAL LLC"].join("\n");
 }
 
 export async function sendWarehouseAddressEmail(input: WarehouseAddressEmailInput): Promise<void> {
