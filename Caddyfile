@@ -1,0 +1,11 @@
+{$DOMAIN:dapanglobal.com} {
+	reverse_proxy app:3000
+	encode gzip zstd
+}
+
+# Redirect www → apex so both hostnames resolve to one canonical URL.
+# Requires a DNS A record for www.dapanglobal.com pointing at this server;
+# remove this block if you only publish the apex record.
+www.{$DOMAIN:dapanglobal.com} {
+	redir https://{$DOMAIN:dapanglobal.com}{uri} permanent
+}
