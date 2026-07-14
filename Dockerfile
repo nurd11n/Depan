@@ -13,6 +13,9 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Guarantee public/ exists even if the build context omitted it (git does not
+# track empty directories), so the runner-stage COPY below can't fail.
+RUN mkdir -p public
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
