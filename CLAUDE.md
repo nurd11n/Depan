@@ -139,9 +139,15 @@ non-root user) + `docker-compose.yml` (app + Caddy) + `Caddyfile` (auto-HTTPS re
 pattern as Avangard.
 - `docker compose up -d --build` from the project root. Caddy listens on 80/443; the app is only
   reachable through it (`expose`, not `ports`).
-- `./data` is bind-mounted into the app container at `/app/data` so the warehouse-address CSV survives
-  container restarts/redeploys — `.env.local`'s `CSV_FILE_PATH` should be the in-container path
-  (`/app/data/warehouse-addresses.csv`), which `docker-compose.yml` already sets via `environment:`.
+- The warehouse-address CSV persists in the **`warehouse_data` named volume** mounted at `/app/data`
+  (not a host bind-mount). Reason: the container runs as non-root `nextjs` (UID 1001); a host bind-mount
+  would carry the host dir's root ownership and the app couldn't write to it — that's exactly the
+  "warehouse address save fails on server but works locally" bug. A named volume initializes from the
+  image's `/app/data` (owned by `nextjs:nodejs`), so writes succeed. `docker-compose.yml` sets
+  `CSV_FILE_PATH=/app/data/warehouse-addresses.csv` via `environment:` (overrides `env_file`). Read/back
+  up the CSV with `docker compose cp app:/app/data/warehouse-addresses.csv ./out.csv` (the daily email
+  report also carries it). If the warehouse form ever 502s, `docker compose logs app | grep csvStore`
+  now prints the real underlying fs error.
 - **Domain: `dapanglobal.com`.** Hardcoded as the default in `Caddyfile` (`{$DOMAIN:dapanglobal.com}`)
   and `docker-compose.yml` (`DOMAIN=${DOMAIN:-dapanglobal.com}`) — both need to agree, since Compose's
   own default takes effect before Caddy's fallback ever gets a chance to. To point at something else

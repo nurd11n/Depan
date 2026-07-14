@@ -40,7 +40,8 @@ async function readRowsFromDisk(): Promise<WarehouseAddressRecord[]> {
   let content: string;
   try {
     content = await readFile(/* turbopackIgnore: true */ CSV_PATH, "utf8");
-  } catch {
+  } catch (err) {
+    console.error(`[csvStore] read failed for ${CSV_PATH}`, err);
     throw new CsvStoreError("Could not read the warehouse address CSV file.");
   }
 
@@ -70,7 +71,8 @@ async function appendRow(record: WarehouseAddressRecord & { createdAt: string })
 
     await appendFile(/* turbopackIgnore: true */ CSV_PATH, chunk, "utf8");
     cachedRows = [...(cachedRows ?? []), record];
-  } catch {
+  } catch (err) {
+    console.error(`[csvStore] append failed for ${CSV_PATH}`, err);
     throw new CsvStoreError("Could not save the new warehouse address.");
   }
 }

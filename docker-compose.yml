@@ -6,8 +6,15 @@ services:
       - .env.local
     environment:
       - CSV_FILE_PATH=/app/data/warehouse-addresses.csv
+    # Named volume (not a host bind-mount): a bind-mount takes the host
+    # directory's ownership (root), which the non-root `nextjs` user in the
+    # image cannot write to — that breaks the warehouse-address CSV save. A
+    # named volume is initialized from the image's /app/data (owned by
+    # nextjs:nodejs), so the app can write to it. Data still persists across
+    # restarts/redeploys. To read/back up the CSV:
+    #   docker compose cp app:/app/data/warehouse-addresses.csv ./warehouse-addresses.csv
     volumes:
-      - ./data:/app/data
+      - warehouse_data:/app/data
     expose:
       - "3000"
 
@@ -27,5 +34,6 @@ services:
       - app
 
 volumes:
+  warehouse_data:
   caddy_data:
   caddy_config:
