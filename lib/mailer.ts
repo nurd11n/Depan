@@ -12,9 +12,13 @@ interface SendArgs {
   attachments?: { filename: string; content: string }[];
 }
 
-// Created once and reused (with connection pooling) instead of opening a
-// fresh SMTP connection on every single send — cuts the Gmail handshake off
-// the critical path for every quote/warehouse-address request.
+// Cached config object (not a persistent connection). We deliberately do NOT
+// use `pool: true` here: pooling keeps long-lived SMTP sockets open, and in a
+// long-running container Gmail silently drops idle connections — so a
+// sporadic send (like a warehouse-address email) can land on a stale socket
+// and fail in prod while working in short-lived local dev. Explicit timeouts
+// make any connection problem fail fast and land in the logs instead of
+// hanging the request.
 let cachedTransporter: nodemailer.Transporter | null = null;
 
 function getTransporter(user: string, pass: string) {
@@ -22,8 +26,9 @@ function getTransporter(user: string, pass: string) {
   cachedTransporter = nodemailer.createTransport({
     service: "gmail",
     auth: { user, pass },
-    pool: true,
-    maxConnections: 3,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
   });
   return cachedTransporter;
 }
@@ -46,15 +51,24 @@ async function deliverEmail({ to, subject, text, attachments }: SendArgs): Promi
   const transporter = getTransporter(user, pass);
 
   try {
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `DAPAN GLOBAL <${user}>`,
       to,
       subject,
       text,
       attachments,
     });
+    // Log the SMTP result so the server logs show whether Gmail actually
+    // ACCEPTED the recipient. accepted=[recipient] means the mail was handed
+    // off successfully and any non-arrival is a downstream deliverability /
+    // spam-filter / DNS (SPF/DKIM) issue, not a send failure.
+    console.log(
+      `[mailer] sent to=${to} subject="${subject}" messageId=${info.messageId} ` +
+        `accepted=${JSON.stringify(info.accepted)} rejected=${JSON.stringify(info.rejected)} ` +
+        `response=${JSON.stringify(info.response)}`,
+    );
   } catch (err) {
-    console.error("[mailer] send failed", err);
+    console.error(`[mailer] send FAILED to=${to} subject="${subject}"`, err);
     throw new MailerError("Could not send email.");
   }
 }
