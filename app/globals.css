@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Dark is the default theme. The token names (midnight, cream, …) are
+   historically dark-flavoured but are really semantic roles:
+   midnight = page background, midnight-light = raised surface,
+   cream = primary text, muted = secondary text, gold = accent.
+   The light theme below just swaps their VALUES, so no component
+   className has to change. */
 :root {
   --background: #181818;
   --foreground: #f0ede8;
@@ -10,6 +16,18 @@
   --color-gold: #c9a96e;
   --color-gold-dim: rgba(201, 169, 110, 0.18);
   --color-border: rgba(240, 237, 232, 0.08);
+}
+
+:root[data-theme="light"] {
+  --background: #f6f2ea;
+  --foreground: #211d17;
+  --color-midnight: #f6f2ea;
+  --color-midnight-light: #ffffff;
+  --color-cream: #211d17;
+  --color-muted: #6b655c;
+  --color-gold: #9a7635;
+  --color-gold-dim: rgba(154, 118, 53, 0.12);
+  --color-border: rgba(33, 29, 23, 0.12);
 }
 
 @theme inline {
@@ -35,4 +53,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   font-weight: 300;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }

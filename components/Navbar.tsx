@@ -4,12 +4,7 @@ import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-
-function persistScroll() {
-  if (typeof window !== "undefined") {
-    sessionStorage.setItem("scrollY", String(window.scrollY));
-  }
-}
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const t = useTranslations("nav");
@@ -17,53 +12,47 @@ export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const links: { id: string; label: string }[] = [
-    { id: "services", label: t("services") },
-    { id: "calculator", label: t("calculator") },
-    { id: "tracking", label: t("tracking") },
-    { id: "rates", label: t("rates") },
-    { id: "address", label: t("address") },
-    { id: "quote-cargo", label: t("contact") },
+  const links: { href: string; label: string }[] = [
+    { href: "/", label: t("home") },
+    { href: "/shipping", label: t("shipping") },
+    { href: "/tracking", label: t("tracking") },
+    { href: "/warehouse", label: t("address") },
+    { href: "/contact", label: t("contact") },
   ];
 
-  function handleNavClick(id: string) {
-    setOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
   }
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-midnight/92 backdrop-blur-md">
       <nav className="flex items-center justify-between px-6 py-[22px] sm:px-12">
-        <a
-          href="#top"
-          onClick={(e) => {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-        >
+        <Link href="/" onClick={() => setOpen(false)}>
           <span className="font-heading text-[22px] font-normal tracking-[0.18em] text-cream">
             DAPAN
           </span>
           <span className="-mt-0.5 block text-[9px] font-light tracking-[0.32em] text-gold">
             {t("logoSub")}
           </span>
-        </a>
+        </Link>
 
         <ul className="hidden items-center gap-9 lg:flex">
           {links.map((link) => (
-            <li key={link.id}>
-              <button
-                type="button"
-                onClick={() => handleNavClick(link.id)}
-                className="text-[11px] font-normal uppercase tracking-[0.2em] text-muted transition-colors hover:text-cream"
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                className={`text-[11px] font-normal uppercase tracking-[0.2em] transition-colors ${
+                  isActive(link.href) ? "text-gold" : "text-muted hover:text-cream"
+                }`}
               >
                 {link.label}
-              </button>
+              </Link>
             </li>
           ))}
         </ul>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <div className="hidden items-center gap-1.5 text-[10px] font-normal tracking-[0.15em] lg:flex">
             {routing.locales.map((l) =>
               l === locale ? (
@@ -75,7 +64,6 @@ export default function Navbar() {
                   key={l}
                   href={pathname}
                   locale={l}
-                  onClick={persistScroll}
                   className="border border-transparent px-3 py-[5px] uppercase text-muted transition-colors hover:border-gold hover:text-gold"
                 >
                   {l}
@@ -83,6 +71,7 @@ export default function Navbar() {
               ),
             )}
           </div>
+          <ThemeToggle />
           <button
             type="button"
             className="text-cream lg:hidden"
@@ -104,14 +93,16 @@ export default function Navbar() {
         <div className="border-t border-border bg-midnight lg:hidden">
           <ul className="flex flex-col gap-1 px-6 py-3">
             {links.map((link) => (
-              <li key={link.id}>
-                <button
-                  type="button"
-                  onClick={() => handleNavClick(link.id)}
-                  className="block w-full py-2 text-left text-[11px] uppercase tracking-[0.2em] text-muted hover:text-gold"
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={`block py-2 text-[11px] uppercase tracking-[0.2em] transition-colors ${
+                    isActive(link.href) ? "text-gold" : "text-muted hover:text-gold"
+                  }`}
                 >
                   {link.label}
-                </button>
+                </Link>
               </li>
             ))}
             <li className="mt-2 flex gap-4 border-t border-border pt-3">
@@ -125,10 +116,7 @@ export default function Navbar() {
                     key={l}
                     href={pathname}
                     locale={l}
-                    onClick={() => {
-                      persistScroll();
-                      setOpen(false);
-                    }}
+                    onClick={() => setOpen(false)}
                     className="text-[11px] font-normal uppercase tracking-[0.2em] text-muted hover:text-gold"
                   >
                     {l}

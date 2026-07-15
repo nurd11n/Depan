@@ -1,13 +1,8 @@
-"use client";
-
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 export default function Hero() {
   const t = useTranslations("hero");
-
-  function scrollTo(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  }
 
   const stats = [
     { value: t("stat1Value"), label: t("stat1Label") },
@@ -41,26 +36,18 @@ export default function Hero() {
         </p>
 
         <div className="mt-14 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <a
-            href="#calculator"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollTo("calculator");
-            }}
+          <Link
+            href="/shipping"
             className="w-full border border-gold px-9 py-[13px] text-center text-[10px] font-normal tracking-[0.22em] text-gold uppercase transition-colors hover:bg-gold hover:text-midnight sm:w-auto"
           >
             {t("ctaCalculator")}
-          </a>
-          <a
-            href="#quote-cargo"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollTo("quote-cargo");
-            }}
+          </Link>
+          <Link
+            href="/contact"
             className="w-full bg-gold px-9 py-[13px] text-center text-[10px] font-normal tracking-[0.22em] text-midnight uppercase transition-opacity hover:opacity-85 sm:w-auto"
           >
             {t("ctaQuote")}
-          </a>
+          </Link>
         </div>
 
         <dl className="mx-auto mt-20 grid max-w-2xl grid-cols-1 gap-8 sm:grid-cols-3">

@@ -63,7 +63,7 @@ export default function RatesTable() {
                 lane.tiers.general.map((tier, i) => (
                   <tr
                     key={`${lane.speed}-${tier.minKg}`}
-                    className="border-b border-border transition-colors hover:bg-white/[0.02]"
+                    className="border-b border-border transition-colors hover:bg-cream/[0.04]"
                   >
                     <td className="py-4 pr-5 text-cream">
                       {i === 0 && (
@@ -101,7 +101,7 @@ export default function RatesTable() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border transition-colors hover:bg-white/[0.02]">
+              <tr className="border-b border-border transition-colors hover:bg-cream/[0.04]">
                 <td className="py-4 pr-5 text-cream">{t("airSmallParcel")}</td>
                 <td className="py-4 pr-5 text-cream">
                   ${AIR_SMALL_PARCEL.general.firstHalfKg.toFixed(2)} / $
@@ -113,7 +113,7 @@ export default function RatesTable() {
                 </td>
               </tr>
               {AIR_TIERS.map((tier) => (
-                <tr key={tier.minKg} className="border-b border-border transition-colors hover:bg-white/[0.02]">
+                <tr key={tier.minKg} className="border-b border-border transition-colors hover:bg-cream/[0.04]">
                   <td className="py-4 pr-5 text-cream">
                     {tier.minKg}
                     {tier.maxKg ? `–${tier.maxKg}kg` : "kg+"}

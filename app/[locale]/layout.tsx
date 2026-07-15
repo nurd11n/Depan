@@ -8,6 +8,7 @@ import { routing } from "@/i18n/routing";
 import { SITE_URL } from "@/lib/site";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { themeInitScript } from "@/components/ThemeToggle";
 import "../globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -38,7 +39,7 @@ export async function generateMetadata({
 
   return {
     metadataBase: new URL(SITE_URL),
-    title,
+    title: { default: title, template: "%s — DAPAN GLOBAL" },
     description,
     alternates: {
       canonical: `/${locale}`,
@@ -71,9 +72,11 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
+      suppressHydrationWarning
       className={`${cormorant.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-midnight text-cream">
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <NextIntlClientProvider>
           <Navbar />
           {children}

@@ -1,14 +1,9 @@
-"use client";
-
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import SectionHeading from "./SectionHeading";
 
 export default function Services() {
   const t = useTranslations("services");
-
-  function scrollTo(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  }
 
   const cards = [
     {
@@ -18,7 +13,7 @@ export default function Services() {
       description: t("cargo.description"),
       points: [t("cargo.point1"), t("cargo.point2"), t("cargo.point3")],
       cta: t("cargo.cta"),
-      target: "quote-cargo",
+      href: "/contact",
     },
     {
       key: "sourcing",
@@ -27,7 +22,7 @@ export default function Services() {
       description: t("sourcing.description"),
       points: [t("sourcing.point1"), t("sourcing.point2"), t("sourcing.point3")],
       cta: t("sourcing.cta"),
-      target: "quote-sourcing",
+      href: "/contact",
     },
   ];
 
@@ -56,13 +51,12 @@ export default function Services() {
                 </li>
               ))}
             </ul>
-            <button
-              type="button"
-              onClick={() => scrollTo(card.target)}
+            <Link
+              href={card.href}
               className="mt-8 self-start border border-gold px-7 py-3 text-[10px] font-normal tracking-[0.22em] text-gold uppercase transition-colors hover:bg-gold hover:text-midnight"
             >
               {card.cta}
-            </button>
+            </Link>
           </div>
         ))}
       </div>

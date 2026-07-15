@@ -19,18 +19,25 @@ The original brief asked for a single HTML/CSS/JS file. We're deliberately not d
 
 ## File layout
 ```
-app/[locale]/page.tsx           # single scroll page, composed of section components
-app/[locale]/layout.tsx
+app/[locale]/page.tsx           # Home page (Hero + Services)
+app/[locale]/shipping/page.tsx  # Calculator + Rates
+app/[locale]/tracking/page.tsx  # tracking form  (tracking/[code] = results)
+app/[locale]/warehouse/page.tsx # China warehouse address
+app/[locale]/contact/page.tsx   # quote forms + contact channels
+app/[locale]/layout.tsx         # fonts, Navbar/Footer, theme init, metadata template
 app/api/quote/route.ts          # cargo + sourcing lead intake
 app/api/track/route.ts          # tracking proxy
 app/api/warehouse-address/route.ts  # China warehouse address assignment
-components/                     # Navbar Hero Services Calculator Tracking RatesTable WarehouseAddress QuoteCargo QuoteSourcing Footer
+app/api/warehouse-report/route.ts   # token-gated CSV download (ADMIN_EXPORT_TOKEN)
+components/                     # Navbar Footer ThemeToggle SectionHeading Hero Services Calculator Tracking RatesTable WarehouseAddress QuoteCargo QuoteSourcing
 lib/rates.ts                    # SINGLE SOURCE OF TRUTH for all pricing
 lib/calc.ts                     # pure chargeable-weight + cost function
 lib/csvStore.ts                 # warehouse address CSV storage + dedupe + numbering
 lib/dailyReport.ts              # schedules the daily CSV report email
 lib/mailer.ts                   # Gmail SMTP (Nodemailer) — leads, address emails, daily report
-messages/en.json  messages/ru.json   # all UI copy
+lib/site.ts                     # SITE_URL + contact/social constants (single source)
+lib/pageMeta.ts                 # per-page localized metadata builder
+messages/{en,ru,es,uk}.json     # all UI copy (identical key sets, 4 locales)
 ```
 
 ## Domain logic — `lib/rates.ts` (single source of truth)
@@ -61,15 +68,34 @@ Calculator component calls it on every input change (debounced). Output shows: c
 transit window, and the "final price confirmed after warehouse measurement" note.
 
 ## i18n
-- Every string keyed in `messages/en.json` + `messages/ru.json` (identical key sets).
-- Locale toggle (EN|RU, top-right of navbar) flips the URL prefix `/en` ↔ `/ru`, preserves scroll position.
+- Four locales: **en, ru, es, uk** — the list lives in `i18n/routing.ts`; everything else (static
+  generation, sitemap, hreflang, nav language switcher, the warehouse-email guide) derives from it, so
+  adding a locale = add it there + a `messages/<locale>.json` with the same key set. Nothing hardcodes
+  the locale count. Every string keyed identically across all four files.
+- Language switcher (EN|RU|ES|UK, navbar + burger) flips the URL prefix on the current path.
 - Zero hardcoded copy in components.
 
-## Sections (single scroll page)
-Navbar (logo DAPAN GLOBAL · Services/Calculator/Tracking/Rates/Contact · EN|RU) · Hero (two CTAs →
-smooth-scroll to calculator / quote) · Services (Cargo + Sourcing cards) · Calculator · Tracking ·
-Rates table (Sea / Air tabs) · Get a China warehouse address · Cargo quote form · Sourcing quote form ·
-Footer (WhatsApp, license disclaimer). Smooth-scroll nav, mobile-first.
+## Pages (multi-page, grouped) + navigation
+Header (fixed) with page links + active-state highlight, language switcher, and light/dark theme
+toggle; collapses to a burger menu below `lg`. Pages:
+- **Home** `/[locale]` — Hero (CTAs link to /shipping and /contact) + Services cards.
+- **Shipping** `/[locale]/shipping` — Calculator + Rates table.
+- **Tracking** `/[locale]/tracking` — tracking form; `/tracking/[code]` renders results.
+- **Warehouse** `/[locale]/warehouse` — China warehouse address feature.
+- **Contact** `/[locale]/contact` — contact channels + cargo & sourcing quote forms.
+Every page is statically generated per locale and sets its own localized title/description +
+canonical/hreflang via `lib/pageMeta.ts` (layout supplies the `%s — DAPAN GLOBAL` title template).
+
+## Theme (light + dark)
+- Dark is the default; a header toggle switches to light and persists in `localStorage`. First visit
+  uses the OS `prefers-color-scheme`. An inline script in the layout `<body>` sets `data-theme` before
+  paint (no flash) — `themeInitScript` lives in `components/ThemeToggle.tsx`.
+- Implemented purely with CSS variables in `app/globals.css`: `:root` = dark values, `:root[data-theme
+  ="light"]` overrides them. The Tailwind tokens (`midnight`, `midnight-light`, `cream`, `muted`,
+  `gold`, `border`) are semantic roles (bg / surface / primary text / secondary text / accent / border),
+  so no component className changes between themes. **Don't use literal `white`/`black`/hex color
+  utilities in components** — they won't adapt; use the tokens (e.g. `bg-cream/[0.04]` for a neutral
+  hover that works in both themes).
 
 ## Tracking — `/api/track` proxy
 Backend: `http://175.178.206.118:8082/trackIndex.htm` (HTTP, bare IP). Sample code: `JXTXL26060401`.
@@ -106,6 +132,10 @@ Backend: `http://175.178.206.118:8082/trackIndex.htm` (HTTP, bare IP). Sample co
   server start) a send of the *entire* CSV as an email attachment once a day
   (`DAILY_REPORT_HOUR`/`DAILY_REPORT_MINUTE`, default 23:59 server time) to `LEADS_EMAIL` — this is
   the operational backup/record now that there's no Google Sheet to look at live.
+- **On-demand download**: `GET /api/warehouse-report?token=<ADMIN_EXPORT_TOKEN>` streams the CSV so it
+  can be pulled from a browser (the file lives in a Docker named volume, not on the host). Disabled
+  unless `ADMIN_EXPORT_TOKEN` is set. Doubles as a health check: a 404 "No data yet" means no write has
+  ever succeeded (→ check `docker compose logs app | grep csvStore` for an `EACCES` volume-perm error).
 
 ## Design tokens (Tailwind theme)
 - Background `#0D1B2A` (midnight), accent `#E8A33D` (gold), text white.
