@@ -24,17 +24,24 @@ app/[locale]/shipping/page.tsx  # Calculator + Rates
 app/[locale]/tracking/page.tsx  # tracking form  (tracking/[code] = results)
 app/[locale]/warehouse/page.tsx # China warehouse address
 app/[locale]/contact/page.tsx   # quote forms + contact channels
+app/[locale]/[...catchAll]/page.tsx  # localized 404 for any dead link under a valid locale
 app/[locale]/layout.tsx         # fonts, Navbar/Footer, theme init, metadata template
+app/[locale]/not-found.tsx      # narrow-edge-case fallback only — see "Error/404/loading pages" below
+app/[locale]/error.tsx          # client-side runtime error boundary
+app/[locale]/loading.tsx        # Suspense fallback (spinner, no copy — see below)
+app/not-found.tsx               # root safety net, self-contained (no [locale] shell to inherit)
+app/global-error.tsx            # catches errors in the root layout itself, self-contained
 app/api/quote/route.ts          # cargo + sourcing lead intake
 app/api/track/route.ts          # tracking proxy
 app/api/warehouse-address/route.ts  # China warehouse address assignment
 app/api/warehouse-report/route.ts   # token-gated CSV download (ADMIN_EXPORT_TOKEN)
-components/                     # Navbar Footer ThemeToggle SectionHeading Hero Services Calculator Tracking RatesTable WarehouseAddress QuoteCargo QuoteSourcing
+components/                     # Navbar Footer ThemeToggle SectionHeading NotFoundContent Hero Services Calculator Tracking RatesTable WarehouseAddress QuoteCargo QuoteSourcing
 lib/rates.ts                    # SINGLE SOURCE OF TRUTH for all pricing
 lib/calc.ts                     # pure chargeable-weight + cost function
 lib/csvStore.ts                 # warehouse address CSV storage + dedupe + numbering
 lib/dailyReport.ts              # schedules the daily CSV report email
-lib/mailer.ts                   # Gmail SMTP (Nodemailer) — leads, address emails, daily report
+lib/mailer.ts                   # Gmail SMTP (Nodemailer) — quote leads + daily CSV report only.
+                                 # No per-customer warehouse-address email — deliberate, see that section.
 lib/site.ts                     # SITE_URL + contact/social constants (single source)
 lib/pageMeta.ts                 # per-page localized metadata builder
 messages/{en,ru,es,uk}.json     # all UI copy (identical key sets, 4 locales)
@@ -85,6 +92,37 @@ toggle; collapses to a burger menu below `lg`. Pages:
 - **Contact** `/[locale]/contact` — contact channels + cargo & sourcing quote forms.
 Every page is statically generated per locale and sets its own localized title/description +
 canonical/hreflang via `lib/pageMeta.ts` (layout supplies the `%s — DAPAN GLOBAL` title template).
+
+## Error / 404 / loading pages
+- **`app/[locale]/[...catchAll]/page.tsx` is the real 404 page** — it's what actually renders for any
+  dead link under a valid locale (e.g. `/en/typo`). It's a **normal page**, not the special
+  `not-found.tsx` file, and that's deliberate:
+  **`app/[locale]/not-found.tsx` cannot be used for this.** Verified live and repeatedly: Next.js
+  renders that special file's output *once* (at build/first-compile) and reuses the cached HTML for
+  every subsequent 404 regardless of the actual request's locale — `headers()`-based workarounds don't
+  fix it, and `export const dynamic = "force-dynamic"` doesn't fix it either, it just forces the
+  **entire `[locale]` segment** to stop being statically generated (a real regression — every other
+  page went from `●` SSG to `ƒ` dynamic). `not-found.tsx` is kept only as the fallback for the one case
+  the catch-all can't reach: a garbage locale segment (`/xx/shipping`) — in practice next-intl's
+  middleware redirects that into the catch-all anyway (`/xx/shipping` → `/en/xx/shipping`), so
+  not-found.tsx is rarely if ever actually hit. **Don't try to make it locale-aware again** — if you
+  need to change the 404 page, edit `components/NotFoundContent.tsx` (shared by both).
+  One trade-off of the catch-all approach: it returns HTTP 200, not a true 404 status.
+- **`app/[locale]/error.tsx`** (client-side runtime error boundary) has no such issue — it correctly
+  localizes in a real browser every time, because `useTranslations` there is the *client* hook reading
+  from `NextIntlClientProvider` context already established by the layout, not a fresh per-request
+  server resolution. Don't test it with `curl`/`fetch` though — the initial HTML response is the
+  pre-hydration shell; the swap to error.tsx's content only happens after client JS hydrates and the
+  error boundary catches it. Verify with a real browser (Playwright), not raw HTTP.
+- **`app/not-found.tsx`** and **`app/global-error.tsx`** (root-level, outside `[locale]`) are
+  self-contained documents with inline styles, not Tailwind/next-intl. Reason: `app/layout.tsx` doesn't
+  render `<html>`/`<body>` itself (only `app/[locale]/layout.tsx` does, since it needs the locale for
+  `lang=`), so anything rendered outside that segment has no shell to inherit and must supply its own.
+- **`app/[locale]/loading.tsx`** is a plain spinner, no translations — it's a Suspense fallback shown
+  very briefly, not worth the complexity of localizing.
+- Gotcha unrelated to any of the above but discovered while building this: **folder/file names starting
+  with `_` are Next.js "private folders" and are silently excluded from routing.** A test route named
+  `__test-error` never matched anything and fell through to the catch-all — cost real debugging time.
 
 ## Theme (light + dark)
 - Dark is the default; a header toggle switches to light and persists in `localStorage`. First visit

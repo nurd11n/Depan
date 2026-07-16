@@ -204,5 +204,18 @@
     "email": "Correo electrónico",
     "rights": "© {year} DAPAN GLOBAL LLC. Todos los derechos reservados.",
     "license": "Con licencia y operando en Chicago, Illinois, EE. UU."
+  },
+  "notFound": {
+    "eyebrow": "404",
+    "title": "Perdido en tránsito.",
+    "subtitle": "La página que busca no existe o pudo haberse movido. Volvamos a la ruta correcta.",
+    "cta": "Volver al Inicio"
+  },
+  "errorBoundary": {
+    "eyebrow": "Algo Salió Mal",
+    "title": "Encontramos un problema.",
+    "subtitle": "Ocurrió un error inesperado. Intente de nuevo o vuelva a la página de inicio.",
+    "retry": "Intentar de Nuevo",
+    "home": "Volver al Inicio"
   }
 }
