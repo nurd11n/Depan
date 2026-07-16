@@ -184,7 +184,7 @@
     "errorPhone": "Enter a valid phone number.",
     "resultTitle": "Your Warehouse Address",
     "resultExisting": "You already have a warehouse address on file — here it is again.",
-    "resultNew": "Your personal warehouse address has been assigned and emailed to you.",
+    "resultNew": "Your personal warehouse address has been assigned.",
     "copy": "Copy Address",
     "copied": "Copied",
     "recipient": "Recipient",

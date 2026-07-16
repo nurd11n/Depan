@@ -184,7 +184,7 @@
     "errorPhone": "Ingrese un número de teléfono válido.",
     "resultTitle": "Su Dirección de Almacén",
     "resultExisting": "Ya tiene una dirección de almacén registrada — aquí está de nuevo.",
-    "resultNew": "Su dirección personal de almacén ha sido asignada y enviada por correo electrónico.",
+    "resultNew": "Su dirección personal de almacén ha sido asignada.",
     "copy": "Copiar Dirección",
     "copied": "Copiado",
     "recipient": "Destinatario",

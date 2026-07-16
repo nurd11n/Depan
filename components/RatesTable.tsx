@@ -39,7 +39,11 @@ export default function RatesTable() {
         </button>
       </div>
 
-      <div className="mt-9 overflow-x-auto">
+      <div className="relative mt-9">
+        {/* Signals horizontal scroll is available on narrow screens — the
+            table has a min-width and will overflow below ~560px. */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-midnight to-transparent sm:hidden" />
+        <div className="overflow-x-auto">
         {tab === "sea" ? (
           <table className="w-full min-w-[560px] border-collapse text-[13px]">
             <thead>
@@ -125,6 +129,7 @@ export default function RatesTable() {
             </tbody>
           </table>
         )}
+        </div>
       </div>
 
       <div className="mt-8 flex flex-col gap-2 text-[11px] text-muted">

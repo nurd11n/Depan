@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { warehouseAddressSchema } from "@/lib/schemas";
 import { assignWarehouseAddress, CsvStoreError } from "@/lib/csvStore";
-import { sendWarehouseAddressEmail, MailerError } from "@/lib/mailer";
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 5;
@@ -53,33 +52,9 @@ export async function POST(req: NextRequest) {
     throw err;
   }
 
-  try {
-    await sendWarehouseAddressEmail({
-      to: email,
-      firstName,
-      lastName,
-      code: assignment.code,
-      fullAddress: assignment.fullAddress,
-    });
-  } catch (err) {
-    if (err instanceof MailerError) {
-      console.error("[warehouse-address] email error", err.message);
-      // The address is already assigned/saved — still return it, just flag
-      // that the email itself didn't go out, so the UI can show it inline.
-      return NextResponse.json({
-        code: assignment.code,
-        fullAddress: assignment.fullAddress,
-        isExisting: assignment.isExisting,
-        emailSent: false,
-      });
-    }
-    throw err;
-  }
-
   return NextResponse.json({
     code: assignment.code,
     fullAddress: assignment.fullAddress,
     isExisting: assignment.isExisting,
-    emailSent: true,
   });
 }

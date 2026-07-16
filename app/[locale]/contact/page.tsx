@@ -55,7 +55,7 @@ export default async function ContactPage({
       <section className="mx-auto max-w-6xl px-6 py-24 sm:px-12">
         <SectionHeading eyebrow={t("quote.eyebrow")} title={t("quote.title")} />
 
-        <div className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-px sm:grid-cols-4">
+        <div className="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-4">
           {channels.map((c) => (
             <a
               key={c.label}
@@ -67,7 +67,9 @@ export default async function ContactPage({
               <span className="text-[9px] font-normal uppercase tracking-[0.2em] text-gold">
                 {c.label}
               </span>
-              <span className="truncate text-[12px] text-cream">{c.value}</span>
+              <span className="truncate text-[12px] text-cream" title={c.value}>
+                {c.value}
+              </span>
             </a>
           ))}
         </div>

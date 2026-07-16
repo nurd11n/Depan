@@ -1,15 +1,5 @@
 import nodemailer from "nodemailer";
-import en from "@/messages/en.json";
-import ru from "@/messages/ru.json";
-import es from "@/messages/es.json";
-import uk from "@/messages/uk.json";
-import { routing } from "@/i18n/routing";
 import type { QuoteInput } from "./schemas";
-
-// Keyed by locale so the warehouse-address guide below can loop over every
-// supported language instead of hardcoding which ones exist — adding a new
-// locale to i18n/routing.ts is then enough, no change needed here.
-const MESSAGES_BY_LOCALE: Record<string, typeof en> = { en, ru, es, uk };
 
 export class MailerError extends Error {}
 
@@ -79,38 +69,6 @@ async function deliverEmail({ to, subject, text, attachments }: SendArgs): Promi
     console.error(`[mailer] send FAILED to=${to} subject="${subject}"`, err);
     throw new MailerError("Could not send email.");
   }
-}
-
-export interface WarehouseAddressEmailInput {
-  to: string;
-  firstName: string;
-  lastName: string;
-  code: string;
-  fullAddress: string;
-}
-
-function buildWarehouseAddressBody(input: WarehouseAddressEmailInput): string {
-  const guideBlocks = routing.locales.flatMap((locale) => {
-    const msgs = MESSAGES_BY_LOCALE[locale];
-    if (!msgs) return [];
-    return [
-      "",
-      `${locale.toUpperCase()} — ${msgs.address.guideTitle}`,
-      `1. ${msgs.address.guideStep1}`,
-      `2. ${msgs.address.guideStep2}`,
-      `3. ${msgs.address.guideStep3}`,
-    ];
-  });
-
-  return [input.fullAddress, "", "──────────", ...guideBlocks, "", "— DAPAN GLOBAL LLC"].join("\n");
-}
-
-export async function sendWarehouseAddressEmail(input: WarehouseAddressEmailInput): Promise<void> {
-  await deliverEmail({
-    to: input.to,
-    subject: `Your China Warehouse Address — ${input.code}`,
-    text: buildWarehouseAddressBody(input),
-  });
 }
 
 function buildQuoteLeadBody(data: QuoteInput): string {

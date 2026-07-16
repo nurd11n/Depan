@@ -126,8 +126,11 @@ Backend: `http://175.178.206.118:8082/trackIndex.htm` (HTTP, bare IP). Sample co
 - **Concurrency**: read-max-then-append is wrapped in an in-process async mutex (`withLock` in
   `csvStore.ts`) so two simultaneous submits can't grab the same number. This only guards a single
   Node process — fine since we deploy as one container, not distributed serverless.
-- Assignment triggers an immediate email to the customer (`sendWarehouseAddressEmail`) with the
-  address + bilingual usage guide.
+- **No per-customer email** — the assigned address is only shown inline on the page (with a copy
+  button), never emailed. Deliberate: this domain's outbound mail to external inboxes is unreliable
+  (see `lib/mailer.ts`'s SMTP result logging), and since dedupe already returns the same address on
+  repeat visits, the customer can always come back to `/warehouse` and re-fetch it. Don't reintroduce a
+  `sendWarehouseAddressEmail`-style call here.
 - **Daily report**: `lib/dailyReport.ts` schedules (via `instrumentation.ts`, registered once at
   server start) a send of the *entire* CSV as an email attachment once a day
   (`DAILY_REPORT_HOUR`/`DAILY_REPORT_MINUTE`, default 23:59 server time) to `LEADS_EMAIL` — this is
